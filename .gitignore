@@ -22,3 +22,20 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+/.idea/workspace.xml
+/target/SITP3dernier-1.0-SNAPSHOT/WEB-INF/web.xml
+/.idea/vcs.xml
+/SITP3dernier.iml
+/target/SITP3dernier-1.0-SNAPSHOT/WEB-INF/classes/META-INF/persistence.xml
+/target/SITP3dernier-1.0-SNAPSHOT/afficheSportifs.jsp
+/target/classes/META-INF/beans.xml
+/target/SITP3dernier-1.0-SNAPSHOT/WEB-INF/classes/META-INF/beans.xml
+/.idea/checkstyle-idea.xml
+/.idea/compiler.xml
+/.idea/discord.xml
+/target/SITP3dernier-1.0-SNAPSHOT/index.jsp
+/.idea/jarRepositories.xml
+/target/SITP3dernier-1.0-SNAPSHOT/META-INF/MANIFEST.MF
+/.idea/misc.xml
+/.idea/modules.xml
+/target/classes/META-INF/persistence.xml
