@@ -17,7 +17,7 @@
 - [ ] Un lieu doit avoir une capacité définie (nombre maximum de personnes).
 
 ## Contraintes sur les Commentaires
-- [ ] Les membres doivent pouvoir déposer des commentaires sur les événements.
+- [ ] Les membres doivent pouvoir déposer des commentairePojos sur les événements.
 
 ## Fonctionnalités et Accès aux Données
 - [ ] Il doit être possible de visualiser l’ensemble des membres de l’association.
@@ -29,7 +29,7 @@
 
 ## Intégration et Services
 - [ ] Assurer que l'accès aux données de la base SQL se fait correctement via des entités JPA.
-- [ ] Les commentaires doivent être correctement stockés et récupérés de la base de données MongoDB.
+- [ ] Les commentairePojos doivent être correctement stockés et récupérés de la base de données MongoDB.
 - [ ] L'interface client Web développée avec Vue.js doit permettre la modification et l'accès aux informations de manière fluide et sécurisée.
 - [ ] Les API REST développées doivent répondre correctement aux requêtes, respectant les contraintes métier et de sécurité.
 

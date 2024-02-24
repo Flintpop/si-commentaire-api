@@ -2,13 +2,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>JSP - Hello World</title>
+    <title>servlet.CommentaireServlet API Test</title>
 </head>
 <body>
-<a href="sport-servlet?operation=listeSportif">Afficher les sportifs</a>
 <h1><%= "Hello World!" %>
 </h1>
 <br/>
-<a href="hello-servlet">Hello Servlet</a>
+<a href="commentaire-servlet">CommentaireServlet API</a>
 </body>
 </html>

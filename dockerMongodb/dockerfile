@@ -1,0 +1,15 @@
+# Utiliser l'image officielle MongoDB comme image parent
+FROM mongo:latest
+
+# Définir le répertoire de travail dans le conteneur
+WORKDIR /usr/src/configs
+
+# Copier le fichier JSON dans le conteneur
+COPY data.json .
+
+# Utiliser un script shell comme point d'entrée pour importer le fichier JSON
+COPY import-script.sh .
+RUN chmod +x import-script.sh
+
+# Exécuter le script shell au démarrage du conteneur
+ENTRYPOINT ["./import-script.sh"]

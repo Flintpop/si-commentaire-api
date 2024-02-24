@@ -1,0 +1,159 @@
+openapi: 3.1.0
+info:
+  title: commentaires-api
+  description: API pour la gestion des commentaires.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8081/
+    description: localhost:8081 (local)
+
+paths:
+  /commentaire:
+    get:
+      summary: Liste tous les commentaires de tous les événements.
+      description: Renvoie une liste de tous les commentaires.
+      responses:
+        '200':
+          description: Une liste de commentaires
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Commentaire'
+    post:
+      summary: Ajoute un nouveau commentaire pour un événement.
+      description: Ajoute un nouveau commentaire pour l'événement passé en paramètre.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                evenementId:
+                  type: integer
+                  description: L'id de l'événement pour lequel ajouter un commentaire.
+                auteurId:
+                  type: integer
+                  description: L'id de l'auteur du commentaire.
+                texte:
+                  type: string
+                  description: Le texte du commentaire.
+      responses:
+        '201':
+          description: Commentaire créé avec succès.
+        '400':
+          description: Requête invalide
+  /commentaire/evenement/{evenementId}:
+    get:
+      summary: Liste tous les commentaires associés à l'événement.
+      description: Renvoie une liste de tous les commentaires associés à l'événement.
+      parameters:
+        - name: evenementId
+          in: path
+          required: true
+          description: L'id de l'événement des commentaires à trouver.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Une liste des commentaires de l'événement.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Commentaire'
+        '404':
+          description: Événement non trouvé.
+  /commentaire/{commentaireId}:
+    get:
+      summary: Récupère le commentaire associé.
+      description: Renvoie un commentaire identifié par son ID.
+      parameters:
+        - name: commentaireId
+          in: path
+          required: true
+          description: L'id du commentaire à chercher.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Détails d'un commentaire
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Commentaire'
+        '404':
+          description: Commentaire non trouvé.
+    delete:
+      summary: Supprime un commentaire
+      description: Supprime le commentaire spécifié. (Soft Delete du commentaire ?)
+      parameters:
+        - name: commentaireId
+          in: path
+          required: true
+          description: L'id du commentaire à supprimer.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Commentaire supprimé avec succès
+        '404':
+          description: Commentaire non trouvé
+    put:
+      summary: Met à jour un commentaire
+      description: Met à jour le commentaire spécifié. (Est-ce qu'on indique s'il a été modifié ?)
+      parameters:
+        - name: commentaireId
+          in: path
+          required: true
+          description: L'id du commentaire à modifier.
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                texte:
+                  type: string
+                  description: Le nouveau texte du commentaire.
+      responses:
+        '200':
+          description: Commentaire mis à jour avec succès
+        '404':
+          description: Commentaire non trouvé
+        '400':
+          description: Requête invalide
+
+components:
+  schemas:
+    Commentaire:
+      type: object
+      required:
+        - id
+        - evenementId
+        - auteurId
+        - dateMessage
+        - texte
+      properties:
+        id:
+          type: integer
+          description: L'identifiant du commentaire.
+        evenementId:
+          type: integer
+          description: L'identifiant de l'évènement pour lequel le commentaire a été écrit.
+        auteurId:
+          type: integer
+          description: L'identifiant de compte ayant écrit le message.
+        dateMessage:
+          type: string
+          format: date-time
+          description: La date de dernière modification du message.
+        texte:
+          type: string
+          description: Le contenu du commentaire.
