@@ -4,7 +4,7 @@ info:
   description: API pour la gestion des commentaires.
   version: 1.0.0
 servers:
-  - url: http://localhost:8081/
+  - url: http://localhost:8081
     description: localhost:8081 (local)
 
 paths:

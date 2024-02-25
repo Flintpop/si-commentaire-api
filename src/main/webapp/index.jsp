@@ -5,9 +5,6 @@
     <title>servlet.CommentaireServlet API Test</title>
 </head>
 <body>
-<h1><%= "Hello World!" %>
-</h1>
-<br/>
-<a href="commentaire-servlet">CommentaireServlet API</a>
+<% response.sendRedirect("commentaire"); %>
 </body>
 </html>

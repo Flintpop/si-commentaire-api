@@ -10,7 +10,7 @@ import java.util.List;
 
 import static model.Commentaire.getListeCommentaires;
 
-@WebServlet(name = "commentaireServlet", value = "/commentaire-servlet")
+@WebServlet(name = "commentaireServlet", value = "/commentaire")
 public class CommentaireServlet extends HttpServlet {
 
   public void init() {
