@@ -1,13 +1,16 @@
 package servlet;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import mongoPojo.CommentairePojo;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.annotation.*;
+import validation.CommentaireValidateur;
+import validation.ValidateurResultat;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;
@@ -15,13 +18,13 @@ import java.util.List;
 import static model.Commentaire.ajouterCommentaire;
 import static model.Commentaire.getListeCommentaires;
 
-//@WebServlet(name = "CommentaireServlet", urlPatterns = {"/CommentaireServlet"})
+@WebServlet(name = "CommentaireServlet", value = "/commentaire")
 public class CommentaireServlet extends HttpServlet {
 
   private final Gson gson = new Gson();
 
   @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     // Simule la récupération des commentaires depuis une source de données
     List<CommentairePojo> commentairePojos = getListeCommentaires();
 
@@ -35,7 +38,7 @@ public class CommentaireServlet extends HttpServlet {
   }
 
   @Override
-  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     // Lit le corps de la requête pour obtenir le JSON envoyé
     StringBuilder jsonBody = new StringBuilder();
     String line;
@@ -45,16 +48,26 @@ public class CommentaireServlet extends HttpServlet {
       }
     }
 
-    // Convertit le JSON reçu en objet Commentaire
-    CommentairePojo commentairePojo = gson.fromJson(jsonBody.toString(), CommentairePojo.class);
-
-    // Simule l'ajout du commentaire à une source de données
-    ajouterCommentaire(commentairePojo);
-
-    response.setStatus(HttpServletResponse.SC_CREATED);
     response.setContentType("application/json");
     response.setCharacterEncoding("UTF-8");
-    response.getWriter().write("{\"message\":\"Commentaire créé avec succès\"}");
+
+    try {
+      // Validation du commentairePojo ici
+      ValidateurResultat validateurResultat = ajouterCommentaire(jsonBody.toString());
+
+
+      if (validateurResultat.isValid()) {
+        response.setStatus(HttpServletResponse.SC_CREATED);
+        response.getWriter().write("{\"message\":\"Commentaire créé avec succès\"}");
+      } else {
+        // Gérer les erreurs de validation ici
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        response.getWriter().write("{\"error\":\"Données de commentaire invalides.\"}");
+      }
+    } catch (JsonSyntaxException e) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      response.getWriter().write("{\"error\":\"Format de données incorrect.\"}");
+    }
     response.getWriter().flush();
   }
 
