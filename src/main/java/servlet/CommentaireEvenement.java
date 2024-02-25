@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@WebServlet(name = "CommentaireEvenement", urlPatterns = {Routes.evenementCommentaire})
+@WebServlet(name = "CommentaireEvenement", value = Routes.evenementCommentaire)
 public class CommentaireEvenement extends HttpServlet {
 
   private final Gson gson = new Gson();

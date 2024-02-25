@@ -8,7 +8,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import mongoPojo.CommentairePojo;
 
 import jakarta.servlet.annotation.*;
-import validation.CommentaireValidateur;
+import routes.Routes;
+import validation.IdValidateur;
 import validation.ValidateurResultat;
 
 import java.io.BufferedReader;
@@ -18,7 +19,11 @@ import java.util.List;
 import static model.Commentaire.ajouterCommentaire;
 import static model.Commentaire.getListeCommentaires;
 
-@WebServlet(name = "CommentaireServlet", value = "/commentaire")
+/**
+ * Servlet pour gérer les commentaires.
+ * get et post sont supportés.
+ */
+@WebServlet(name = "CommentaireServlet", value = Routes.commentaire)
 public class CommentaireServlet extends HttpServlet {
 
   private final Gson gson = new Gson();
@@ -26,14 +31,42 @@ public class CommentaireServlet extends HttpServlet {
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     // Simule la récupération des commentaires depuis une source de données
+    // On vérifie si request a un parametre id pour obtenir seulement un commentaire pour cet id
+    response.setContentType("application/json");
+    response.setCharacterEncoding("UTF-8");
+
+    // Si le paramètre id est présent, retourne le commentaire correspondant
+    if (request.getParameter("id") != null) {
+      servletGetCommentaireById(request, response);
+      return;
+    }
+
     List<CommentairePojo> commentairePojos = getListeCommentaires();
 
     // Convertit la liste des commentaires en JSON
     String commentairesJson = gson.toJson(commentairePojos);
 
-    response.setContentType("application/json");
-    response.setCharacterEncoding("UTF-8");
+    response.setStatus(HttpServletResponse.SC_OK);
     response.getWriter().write(commentairesJson);
+    response.getWriter().flush();
+  }
+
+  // TODO: À tester
+  private void servletGetCommentaireById(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    int id = Integer.parseInt(request.getParameter("id"));
+    CommentairePojo commentairePojo = model.Commentaire.getCommentaireById(id);
+
+    // Si le commentaire n'existe pas, retourne une erreur 404
+    if (commentairePojo == null) {
+      response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+      response.getWriter().write("{\"error\":\"Commentaire non trouvé.\"}");
+      response.getWriter().flush();
+      return;
+    }
+
+    String commentaireJson = gson.toJson(commentairePojo);
+    response.setStatus(HttpServletResponse.SC_OK);
+    response.getWriter().write(commentaireJson);
     response.getWriter().flush();
   }
 
@@ -68,6 +101,37 @@ public class CommentaireServlet extends HttpServlet {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       response.getWriter().write("{\"error\":\"Format de données incorrect.\"}");
     }
+    response.getWriter().flush();
+  }
+
+  // delete un single commentaire de part son id s'il existe, sinon erreur
+  // TODO: À tester
+  @Override
+  protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    response.setContentType("application/json");
+    response.setCharacterEncoding("UTF-8");
+
+    IdValidateur idValidateur = new IdValidateur();
+    ValidateurResultat validationResult = idValidateur.valider(request.getParameter("id"));
+    if (!validationResult.isValid()) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      response.getWriter().write("{\"error\":\"" + validationResult.getErrorMessages() + "\"}");
+      response.getWriter().flush();
+      return;
+    }
+
+    int id = Integer.parseInt(request.getParameter("id"));
+    CommentairePojo commentairePojo = model.Commentaire.getCommentaireById(id);
+    if (commentairePojo == null) {
+      response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+      response.getWriter().write("{\"error\":\"Commentaire non trouvé.\"}");
+      response.getWriter().flush();
+      return;
+    }
+
+    model.Commentaire.deleteCommentaire(id);
+    response.setStatus(HttpServletResponse.SC_OK);
+    response.getWriter().write("{\"message\":\"Commentaire supprimé avec succès\"}");
     response.getWriter().flush();
   }
 
