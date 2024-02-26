@@ -30,6 +30,7 @@ public class IdValidateur implements Validateur<String> {
 
     if (id < 0) {
       errors.add("L'id du commentaire doit être un entier positif.");
+      return new ValidateurResultat(false, errors);
     }
 
     return new ValidateurResultat(isValid, errors);
