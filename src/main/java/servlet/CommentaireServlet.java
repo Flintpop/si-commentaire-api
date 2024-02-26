@@ -52,8 +52,6 @@ public class CommentaireServlet extends HttpServlet {
   }
 
   private void servletGetCommentaireById(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    System.out.println("Le paramètre id est présent et est : " + request.getParameter("id") + " de type" +
-            " : " + request.getParameter("id").getClass());
     IdValidateur idValidateur = new IdValidateur();
     ValidateurResultat validationResult = idValidateur.valider(request.getParameter("id"));
     if (!validationResult.isValid()) {
@@ -64,7 +62,6 @@ public class CommentaireServlet extends HttpServlet {
     }
 
     int id = Integer.parseInt(request.getParameter("id"));
-    System.out.println("L'id du commentaire est : " + id + " et converti au type : int");
     CommentairePojo commentairePojo = model.Commentaire.getCommentaireById(id);
 
     // Si le commentaire n'existe pas, retourne une erreur 404
