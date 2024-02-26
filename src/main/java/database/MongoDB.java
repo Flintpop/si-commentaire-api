@@ -19,7 +19,7 @@ public class MongoDB {
   private static MongoDatabase database = null;
   private static MongoCollection<CommentairePojo> collection = null;
   private static final String DATABASE_NAME = "commentaires";
-  private static final String CONNECTION_URL = "mongodb://mongodb:27017";
+  private static final String CONNECTION_URL = "mongodb://mongo:27017";
 
   private MongoDB() {
     // Constructeur privé pour éviter l'instanciation
