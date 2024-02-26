@@ -10,6 +10,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+/**
+ * Servlet pour gérer les commentaires des événements.
+ * get est utilisé pour récupérer les commentaires d'un événement.
+ */
 @WebServlet(name = "CommentaireEvenement", value = Routes.evenementCommentaire)
 public class CommentaireEvenement extends HttpServlet {
 
@@ -20,8 +24,4 @@ public class CommentaireEvenement extends HttpServlet {
 
   }
 
-  @Override
-  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
-  }
 }

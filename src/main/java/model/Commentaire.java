@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.DeleteResult;
-import com.mongodb.internal.bulk.DeleteRequest;
 import database.MongoDB;
 import mongoPojo.CommentairePojo;
 import org.bson.conversions.Bson;
@@ -35,6 +34,7 @@ public class Commentaire {
 
   /**
    * Méthode pour ajouter un commentaire dans la bdd.
+   *
    * @param jsonBody le jsonBody de la requête POST, qui contient le commentaire à ajouter.
    * @return un objet ValidateurResultat qui contient le résultat de la validation du commentaire.
    * @throws JsonSyntaxException si le jsonBody n'est pas valide en termes de syntaxe (c.-à-d. int au lieu de string)
@@ -69,7 +69,7 @@ public class Commentaire {
   // TODO: À tester
   public static void deleteCommentaire(int id) {
     MongoCollection<CommentairePojo> collection = MongoDB.getCollection();
-    Bson filter = eq("id", id);
+    Bson filter = eq("_id", id);
     DeleteResult deleteResult = collection.deleteOne(filter);
 
     if (deleteResult.getDeletedCount() == 0) {
@@ -78,16 +78,15 @@ public class Commentaire {
   }
 
   // TODO: À tester
-  public static void updateCommentaire(int id, String jsonBody) {
-    Gson gson = new Gson();
-    CommentairePojo commentairePojo = gson.fromJson(jsonBody, CommentairePojo.class);
-    commentairePojo.setId(id);
-    CommentaireValidateur commentaireValidateur = new CommentaireValidateur();
-    ValidateurResultat validationResult = commentaireValidateur.valider(commentairePojo);
+  public static void updateCommentaire(int id, String jsonBody) throws JsonSyntaxException {
+    CommentairePojo commentairePojo = getCommentaireById(id);
+    if (commentairePojo != null) {
+      Gson gson = new Gson();
+      TexteWrapper texte = gson.fromJson(jsonBody, TexteWrapper.class);
+      commentairePojo.setTexte(texte.getTexte());
 
-    if (validationResult.isValid()) {
       MongoCollection<CommentairePojo> collection = MongoDB.getCollection();
-      Bson filter = eq("id", id);
+      Bson filter = eq("_id", id);
       collection.replaceOne(filter, commentairePojo);
     }
   }
