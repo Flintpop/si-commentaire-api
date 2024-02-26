@@ -29,7 +29,7 @@ public class Commentaire {
 
   public static CommentairePojo getCommentaireById(int id) {
     MongoCollection<CommentairePojo> collection = MongoDB.getCollection();
-    Bson filter = eq("id", id);
+    Bson filter = eq("_id", id);
     return collection.find(filter).first();
   }
 
