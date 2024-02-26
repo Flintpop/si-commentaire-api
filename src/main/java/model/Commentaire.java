@@ -11,6 +11,7 @@ import validation.CommentaireValidateur;
 import validation.ValidateurResultat;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.mongodb.client.model.Filters.eq;
@@ -77,7 +78,6 @@ public class Commentaire {
     }
   }
 
-  // TODO: À tester
   public static void updateCommentaire(int id, String jsonBody) throws JsonSyntaxException {
     CommentairePojo commentairePojo = getCommentaireById(id);
     if (commentairePojo != null) {
@@ -89,5 +89,11 @@ public class Commentaire {
       Bson filter = eq("_id", id);
       collection.replaceOne(filter, commentairePojo);
     }
+  }
+
+  public static ArrayList<CommentairePojo> getCommentairesByEvenementId(int evenementId) {
+    MongoCollection<CommentairePojo> collection = MongoDB.getCollection();
+    Bson filter = eq("evenementId", evenementId);
+    return convertToList(collection.find(filter));
   }
 }
