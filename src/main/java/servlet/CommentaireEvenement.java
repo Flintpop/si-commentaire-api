@@ -24,6 +24,9 @@ public class CommentaireEvenement extends HttpServlet {
 
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    response.setContentType("application/json");
+    response.setCharacterEncoding("UTF-8");
+
     IdValidateur idValidateur = new IdValidateur();
     ValidateurResultat validationResult = idValidateur.valider(request.getParameter("id"));
     if (!validationResult.isValid()) {
