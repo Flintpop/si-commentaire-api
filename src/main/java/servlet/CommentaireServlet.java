@@ -8,11 +8,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import mongoPojo.CommentairePojo;
 
 import jakarta.servlet.annotation.*;
-import routes.Routes;
-import validation.IdValidateur;
 import validation.ValidateurResultat;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;
 
@@ -23,165 +20,71 @@ import static model.Commentaire.getListeCommentaires;
  * Servlet pour gérer les commentaires.
  * get et post sont supportés.
  */
-@WebServlet(name = "CommentaireServlet", value = Routes.commentaire)
+@WebServlet(name = "CommentaireServlet", value = "/commentaire/*")
 public class CommentaireServlet extends HttpServlet {
 
   private final Gson gson = new Gson();
 
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    // Simule la récupération des commentaires depuis une source de données
-    // On vérifie si request a un parametre id pour obtenir seulement un commentaire pour cet id
-    response.setContentType("application/json");
-    response.setCharacterEncoding("UTF-8");
-
-    // Si le paramètre id est présent, retourne le commentaire correspondant
-    if (request.getParameter("id") != null) {
-      servletGetCommentaireById(request, response);
-      return;
+    String pathInfo = request.getPathInfo();
+    Integer id = ServletUtils.extraireEtValiderId(pathInfo, response, false);
+    if (id == null) {
+      return; // Une réponse a déjà été envoyée par extraireEtValiderId
     }
 
-    List<CommentairePojo> commentairePojos = getListeCommentaires();
-
-    // Convertit la liste des commentaires en JSON
-    String commentairesJson = gson.toJson(commentairePojos);
-
-    response.setStatus(HttpServletResponse.SC_OK);
-    response.getWriter().write(commentairesJson);
-    response.getWriter().flush();
-  }
-
-  private void servletGetCommentaireById(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    IdValidateur idValidateur = new IdValidateur();
-    ValidateurResultat validationResult = idValidateur.valider(request.getParameter("id"));
-    if (!validationResult.isValid()) {
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      response.getWriter().write("{\"error\":\"" + validationResult.getErrorMessages() + "\"}");
-      response.getWriter().flush();
-      return;
+    if (id > 0) { // Un ID a été spécifié
+      CommentairePojo commentairePojo = model.Commentaire.getCommentaireById(id);
+      if (commentairePojo == null) {
+        ServletUtils.envoyerReponseJson(response, HttpServletResponse.SC_NOT_FOUND, "{\"error\":\"Commentaire non trouvé.\"}");
+        return;
+      }
+      ServletUtils.envoyerReponseJson(response, HttpServletResponse.SC_OK, gson.toJson(commentairePojo));
+    } else { // Aucun ID spécifié, retourner tous les commentaires
+      List<CommentairePojo> commentairePojos = getListeCommentaires();
+      ServletUtils.envoyerReponseJson(response, HttpServletResponse.SC_OK, gson.toJson(commentairePojos));
     }
-
-    int id = Integer.parseInt(request.getParameter("id"));
-    CommentairePojo commentairePojo = model.Commentaire.getCommentaireById(id);
-
-    // Si le commentaire n'existe pas, retourne une erreur 404
-    if (commentairePojo == null) {
-      response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-      response.getWriter().write("{\"error\":\"Commentaire non trouvé.\"}");
-      response.getWriter().flush();
-      return;
-    }
-
-    String commentaireJson = gson.toJson(commentairePojo);
-    response.setStatus(HttpServletResponse.SC_OK);
-    response.getWriter().write(commentaireJson);
-    response.getWriter().flush();
   }
 
   @Override
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    // Lit le corps de la requête pour obtenir le JSON envoyé
-    StringBuilder jsonBody = new StringBuilder();
-    String line;
-    try (BufferedReader reader = request.getReader()) {
-      while ((line = reader.readLine()) != null) {
-        jsonBody.append(line);
-      }
-    }
-
-    response.setContentType("application/json");
-    response.setCharacterEncoding("UTF-8");
-
+    String jsonBody = ServletUtils.lireCorpsRequete(request);
     try {
-      // Validation du commentairePojo ici
-      ValidateurResultat validateurResultat = ajouterCommentaire(jsonBody.toString());
-
-
+      ValidateurResultat validateurResultat = ajouterCommentaire(jsonBody);
       if (validateurResultat.isValid()) {
-        response.setStatus(HttpServletResponse.SC_CREATED);
-        response.getWriter().write("{\"message\":\"Commentaire créé avec succès\"}");
+        ServletUtils.envoyerReponseJson(response, HttpServletResponse.SC_CREATED, "{\"message\":\"Commentaire créé avec succès\"}");
       } else {
-        // Gérer les erreurs de validation ici
-        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        response.getWriter().write("{\"error\":\"Données de commentaire invalides.\"}");
+        ServletUtils.envoyerReponseJson(response, HttpServletResponse.SC_BAD_REQUEST, "{\"error\":\"Données de commentaire invalides.\"}");
       }
     } catch (JsonSyntaxException e) {
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      response.getWriter().write("{\"error\":\"Format de données incorrect.\"}");
+      ServletUtils.envoyerReponseJson(response, HttpServletResponse.SC_BAD_REQUEST, "{\"error\":\"Format de données incorrect.\"}");
     }
-    response.getWriter().flush();
   }
 
-  // delete un single commentaire de part son id s'il existe, sinon erreur
   @Override
   protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    response.setContentType("application/json");
-    response.setCharacterEncoding("UTF-8");
-
-    IdValidateur idValidateur = new IdValidateur();
-    ValidateurResultat validationResult = idValidateur.valider(request.getParameter("id"));
-    if (!validationResult.isValid()) {
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      response.getWriter().write("{\"error\":\"" + validationResult.getErrorMessages() + "\"}");
-      response.getWriter().flush();
-      return;
-    }
-
-    int id = Integer.parseInt(request.getParameter("id"));
-    CommentairePojo commentairePojo = model.Commentaire.getCommentaireById(id);
+    CommentairePojo commentairePojo = ServletUtils.extraireEtValiderCommentaire(request, response);
     if (commentairePojo == null) {
-      response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-      response.getWriter().write("{\"error\":\"Commentaire non trouvé.\"}");
-      response.getWriter().flush();
-      return;
+      return; // La méthode utilitaire a déjà géré la réponse
     }
 
-    model.Commentaire.deleteCommentaire(id);
-    response.setStatus(HttpServletResponse.SC_OK);
-    response.getWriter().write("{\"message\":\"Commentaire supprimé avec succès\"}");
-    response.getWriter().flush();
+    model.Commentaire.deleteCommentaire(commentairePojo.getId());
+    ServletUtils.envoyerReponseJson(response, HttpServletResponse.SC_OK, "{\"message\":\"Commentaire supprimé avec succès\"}");
   }
 
-  // update un single commentaire grâce à son id s'il existe, sinon erreur
   @Override
   protected void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    response.setContentType("application/json");
-    response.setCharacterEncoding("UTF-8");
-
-    IdValidateur idValidateur = new IdValidateur();
-    ValidateurResultat validationResult = idValidateur.valider(request.getParameter("id"));
-    if (!validationResult.isValid()) {
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      response.getWriter().write("{\"error\":\"" + validationResult.getErrorMessages() + "\"}");
-      response.getWriter().flush();
-      return;
-    }
-
-    int id = Integer.parseInt(request.getParameter("id"));
-    CommentairePojo commentairePojo = model.Commentaire.getCommentaireById(id);
+    CommentairePojo commentairePojo = ServletUtils.extraireEtValiderCommentaire(request, response);
     if (commentairePojo == null) {
-      response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-      response.getWriter().write("{\"error\":\"Commentaire non trouvé.\"}");
-      response.getWriter().flush();
-      return;
+      return; // La méthode utilitaire a déjà géré la réponse
     }
 
-    StringBuilder jsonBody = new StringBuilder();
-    String line;
-    try (BufferedReader reader = request.getReader()) {
-      while ((line = reader.readLine()) != null) {
-        jsonBody.append(line);
-      }
-    }
-
+    String jsonBody = ServletUtils.lireCorpsRequete(request);
     try {
-      model.Commentaire.updateCommentaire(id, jsonBody.toString());
-      response.setStatus(HttpServletResponse.SC_OK);
-      response.getWriter().write("{\"message\":\"Commentaire modifié avec succès\"}");
+      model.Commentaire.updateCommentaire(commentairePojo.getId(), jsonBody);
+      ServletUtils.envoyerReponseJson(response, HttpServletResponse.SC_OK, "{\"message\":\"Commentaire modifié avec succès\"}");
     } catch (JsonSyntaxException e) {
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      response.getWriter().write("{\"error\":\"Format de données incorrect.\"}");
+      ServletUtils.envoyerReponseJson(response, HttpServletResponse.SC_BAD_REQUEST, "{\"error\":\"Format de données incorrect.\"}");
     }
-    response.getWriter().flush();
   }
 }

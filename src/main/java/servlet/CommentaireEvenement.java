@@ -6,18 +6,11 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import mongoPojo.CommentairePojo;
-import routes.Routes;
-import validation.IdValidateur;
-import validation.ValidateurResultat;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
-/**
- * Servlet pour gérer les commentaires des événements.
- * get est utilisé pour récupérer les commentaires d'un événement.
- */
-@WebServlet(name = "CommentaireEvenement", value = Routes.evenementCommentaire)
+@WebServlet(name = "CommentaireEvenement", urlPatterns = "/commentaire/evenement/*")
 public class CommentaireEvenement extends HttpServlet {
 
   private final Gson gson = new Gson();
@@ -27,28 +20,20 @@ public class CommentaireEvenement extends HttpServlet {
     response.setContentType("application/json");
     response.setCharacterEncoding("UTF-8");
 
-    IdValidateur idValidateur = new IdValidateur();
-    ValidateurResultat validationResult = idValidateur.valider(request.getParameter("id"));
-    if (!validationResult.isValid()) {
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      response.getWriter().write("{\"error\":\"" + validationResult.getErrorMessages() + "\"}");
-      response.getWriter().flush();
+    // Utilisation de extraireEtValiderId pour récupérer et valider l'ID de l'événement
+    Integer eventId = ServletUtils.extraireEtValiderId(request.getPathInfo(), response, true);
+    if (eventId == null || eventId < 0) {
+      // La validation de l'ID a échoué et une réponse a déjà été envoyée
       return;
     }
 
-    int id = Integer.parseInt(request.getParameter("id"));
-    ArrayList<CommentairePojo> commentairePojos = model.Commentaire.getCommentairesByEvenementId(id);
+    // Utilisation de l'ID validé pour récupérer les commentaires
+    ArrayList<CommentairePojo> commentairePojos = model.Commentaire.getCommentairesByEvenementId(eventId);
     if (commentairePojos == null || commentairePojos.isEmpty()) {
-      response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-      response.getWriter().write("{\"error\":\"Évènement non trouvé, ou pas de commentaires pour cet " +
-              "évènements\"}");
-      response.getWriter().flush();
+      ServletUtils.envoyerReponseJson(response, HttpServletResponse.SC_NOT_FOUND, "{\"error\":\"Évènement non trouvé, ou pas de commentaires pour cet évènement.\"}");
       return;
     }
 
-    response.setStatus(HttpServletResponse.SC_OK);
-    response.getWriter().write(gson.toJson(commentairePojos));
-    response.getWriter().flush();
+    ServletUtils.envoyerReponseJson(response, HttpServletResponse.SC_OK, gson.toJson(commentairePojos));
   }
-
 }
