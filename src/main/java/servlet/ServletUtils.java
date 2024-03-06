@@ -23,8 +23,7 @@ public class ServletUtils {
   public static Integer extraireEtValiderId(String pathInfo, HttpServletResponse response, boolean expectedId) throws IOException {
     if (pathInfo == null || pathInfo.length() <= 1) {
       if (expectedId) {
-        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        response.getWriter().write("{\"error\":\"L'ID du commentaire est manquant ou invalide.\"}");
+        ServletUtils.envoyerReponseJson(response, HttpServletResponse.SC_BAD_REQUEST, "{\"error\":\"L'ID du commentaire est manquant ou invalide.\"}");
       }
       return -1;
     }
@@ -32,14 +31,12 @@ public class ServletUtils {
     try {
       int id = Integer.parseInt(pathInfo.substring(1));
       if (id < 0) {
-        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        response.getWriter().write("{\"error\":\"L'ID du commentaire doit être un entier positif.\"}");
+        ServletUtils.envoyerReponseJson(response, HttpServletResponse.SC_BAD_REQUEST, "{\"error\":\"L'ID du commentaire doit être un entier positif.\"}");
         return null;
       }
       return id;
     } catch (NumberFormatException e) {
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      response.getWriter().write("{\"error\":\"Format de l'ID invalide, n'est pas un chiffre.\"}");
+      ServletUtils.envoyerReponseJson(response, HttpServletResponse.SC_BAD_REQUEST, "{\"error\":\"Format de l'ID invalide, n'est pas un chiffre.\"}");
       return null;
     }
   }
